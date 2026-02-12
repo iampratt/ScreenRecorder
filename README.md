@@ -1,6 +1,6 @@
 # Screen Recorder
 
-> A premium Electron desktop application for recording screens and webcams with a refined, professional interface.
+> An Electron desktop application for recording screens and webcams with a refined, professional interface.
 
 ![Electron](https://img.shields.io/badge/Electron-33.3.1-47848F?logo=electron)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
