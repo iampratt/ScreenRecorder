@@ -1,0 +1,21 @@
+{
+  "name": "screen-webcam-recorder",
+  "version": "1.0.0",
+  "description": "Screen & Webcam Recorder — Electron Desktop App",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "electron": "^33.3.1",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.0"
+  }
+}
