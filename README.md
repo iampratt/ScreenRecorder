@@ -9,6 +9,12 @@
 
 Screen Recorder is a cross-platform desktop application built with Electron that enables users to capture their screen and webcam simultaneously. Each recording session is saved as separate video files in a uniquely identified folder, making it easy to organize and manage your recordings.
 
+
+
+https://github.com/user-attachments/assets/fb67210f-a0b5-47c7-976d-2d4171eb027d
+
+
+
 **Key Highlights:**
 - 🎥 **Dual Recording** — Capture screen and webcam independently
 - 🖼️ **Visual Source Picker** — Browse all screens and windows with live thumbnails
