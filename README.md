@@ -2,7 +2,6 @@
 
 > A premium Electron desktop application for recording screens and webcams with a refined, professional interface.
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Electron](https://img.shields.io/badge/Electron-33.3.1-47848F?logo=electron)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript)
 
@@ -169,52 +168,6 @@ window.electronAPI.createSession()
 window.electronAPI.saveRecording(sessionId, type, buffer)
 ```
 
-### Recording Flow
-
-```mermaid
-graph TD
-    A[User selects source] --> B[Preview stream starts]
-    B --> C{Webcam enabled?}
-    C -->|Yes| D[Start webcam preview]
-    C -->|No| E[User clicks Start Recording]
-    D --> E
-    E --> F[Create UUID session folder]
-    F --> G[Start MediaRecorder for screen]
-    G --> H{Webcam enabled?}
-    H -->|Yes| I[Start MediaRecorder for webcam]
-    H -->|No| J[Timer starts]
-    I --> J
-    J --> K[User clicks Stop Recording]
-    K --> L[Stop all MediaRecorders]
-    L --> M[Convert blobs to ArrayBuffer]
-    M --> N[Save screen.webm]
-    N --> O{Webcam was enabled?}
-    O -->|Yes| P[Save webcam.webm]
-    O -->|No| Q[Show completion screen]
-    P --> Q
-```
-
----
-
-## 🎨 Design System
-
-### Color Palette (Liquid Glass)
-
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `--bg-deep` | `#0a0908` | Deepest background |
-| `--bg-base` | `#1c1917` | Primary background (stone) |
-| `--bg-surface` | `#292524` | Elevated surfaces |
-| `--accent` | `#ca8a04` | Gold accent (primary actions) |
-| `--text-primary` | `#fafaf9` | High-contrast text |
-| `--danger` | `#ef4444` | Recording indicator |
-
-### Typography
-
-- **Display:** Bodoni Moda (serif) — Elegant, luxurious
-- **UI Text:** Jost (sans-serif) — Clean, modern
-- **Monospace:** JetBrains Mono — Code, timers, technical info
-
 ---
 
 ## 📁 File Storage
@@ -318,34 +271,6 @@ npm start
 | **Memory Usage** | Entire recording buffered in RAM before saving | Avoid sessions longer than 1 hour |
 | **macOS Permissions** | Requires Screen Recording permission | Follow setup guide above |
 | **Mid-recording Close** | Best-effort save on app close | Avoid closing app during recording |
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Audio recording (system audio + microphone)
-- [ ] MP4 export option
-- [ ] Streaming recording (write to disk in chunks)
-- [ ] Custom save location
-- [ ] Video trimming/editing
-- [ ] Annotation tools (draw on screen during recording)
-- [ ] Hotkey support (global shortcuts)
-- [ ] Cloud upload integration
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
-
-- Built with [Electron](https://www.electronjs.org/)
-- Powered by [electron-vite](https://electron-vite.org/)
-- Icons from [Lucide](https://lucide.dev/)
-- Fonts from [Google Fonts](https://fonts.google.com/)
 
 ---
 
