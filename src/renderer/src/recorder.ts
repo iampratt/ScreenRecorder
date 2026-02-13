@@ -36,8 +36,23 @@ export class ScreenRecorder {
             if (e.data.size > 0) this.chunks.push(e.data)
         }
 
-        this.mediaRecorder.start(1000)
+        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
         return this.stream
+    }
+
+    async startWithStream(stream: MediaStream): Promise<void> {
+        this.chunks = []
+        this.stream = stream
+
+        this.mediaRecorder = new MediaRecorder(this.stream, {
+            mimeType: getSupportedMimeType()
+        })
+
+        this.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) this.chunks.push(e.data)
+        }
+
+        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
     }
 
     stop(): Promise<Blob> {
@@ -85,7 +100,7 @@ export class WebcamRecorder {
             if (e.data.size > 0) this.chunks.push(e.data)
         }
 
-        this.mediaRecorder.start(1000)
+        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
         return this.stream
     }
 

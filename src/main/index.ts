@@ -18,7 +18,7 @@ function createWindow(): void {
         height: 800,
         minWidth: 900,
         minHeight: 600,
-        backgroundColor: '#0c0c14',
+        backgroundColor: '#1c1917', // Match --bg-base from Liquid Glass theme
         webPreferences: {
             preload: join(__dirname, '../preload/index.js'),
             contextIsolation: true,

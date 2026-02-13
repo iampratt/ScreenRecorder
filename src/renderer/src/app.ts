@@ -170,6 +170,13 @@ export class App {
         } catch (err) {
             console.error('Failed to start preview:', err)
             this.showError('Failed to capture selected source')
+
+            // Ensure record button stays disabled on failure
+            if (this.el.recordBtn) this.el.recordBtn.disabled = true
+
+            // Reset selected source on failure
+            this.selectedSource = null
+            this.renderSources()
         }
     }
 
@@ -228,22 +235,15 @@ export class App {
     }
 
     private async startRecording(): Promise<void> {
-        if (!this.selectedSource) return
+        if (!this.selectedSource || !this.previewStream) return
 
         try {
             this.currentSessionId = await window.electronAPI.createSession()
             this.isRecording = true
             this.updateRecordingUI(true)
 
-            // Start screen recording
-            const screenStream = await this.screenRecorder.start(this.selectedSource.id)
-
-            // Update preview with the recording stream
-            if (this.el.previewVideo) {
-                this.previewStream?.getTracks().forEach(t => t.stop())
-                this.previewStream = screenStream
-                this.el.previewVideo.srcObject = screenStream
-            }
+            // Start screen recording using the existing preview stream
+            await this.screenRecorder.startWithStream(this.previewStream)
 
             // Start webcam recording if enabled
             if (this.webcamEnabled) {
@@ -279,8 +279,13 @@ export class App {
             this.screenRecorder.cleanup()
 
             if (this.currentSessionId && screenBlob.size > 0) {
-                const buffer = await screenBlob.arrayBuffer()
-                await window.electronAPI.saveRecording(this.currentSessionId, 'screen', buffer)
+                try {
+                    const buffer = await screenBlob.arrayBuffer()
+                    await window.electronAPI.saveRecording(this.currentSessionId, 'screen', buffer)
+                } catch (err) {
+                    console.error('Failed to convert screen blob:', err)
+                    this.showError('Failed to save screen recording (conversion error)')
+                }
             }
 
             // Stop webcam recording and save
@@ -289,32 +294,19 @@ export class App {
                 this.webcamRecorder.cleanup()
 
                 if (this.currentSessionId && webcamBlob.size > 0) {
-                    const buffer = await webcamBlob.arrayBuffer()
-                    await window.electronAPI.saveRecording(this.currentSessionId, 'webcam', buffer)
+                    try {
+                        const buffer = await webcamBlob.arrayBuffer()
+                        await window.electronAPI.saveRecording(this.currentSessionId, 'webcam', buffer)
+                    } catch (err) {
+                        console.error('Failed to convert webcam blob:', err)
+                        this.showError('Failed to save webcam recording (conversion error)')
+                    }
                 }
             }
 
             // Show complete screen
             this.showCompleteOverlay()
             await this.loadSessions()
-
-            // Restart preview with fresh stream
-            if (this.selectedSource) {
-                try {
-                    this.previewStream = await navigator.mediaDevices.getUserMedia({
-                        audio: false,
-                        video: {
-                            mandatory: {
-                                chromeMediaSource: 'desktop',
-                                chromeMediaSourceId: this.selectedSource.id
-                            }
-                        } as any
-                    })
-                    if (this.el.previewVideo) {
-                        this.el.previewVideo.srcObject = this.previewStream
-                    }
-                } catch { /* preview fails silently */ }
-            }
         } catch (err) {
             console.error('Failed to save recording:', err)
             this.showError('Error saving recording')
