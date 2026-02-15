@@ -5,12 +5,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 let mainWindow: BrowserWindow | null = null
 
-function getVideosDir(): string {
-    if (app.isPackaged) {
-        return join(app.getPath('userData'), 'videos')
-    }
-    return join(process.cwd(), 'videos')
-}
+
+const videosDir: string=join(process.cwd(), 'videos')
 
 
 function createWindow(): void {
@@ -73,13 +69,13 @@ function setupIPC(): void {
 
     ipcMain.handle('create-session', () => {
         const sessionId = uuidv4()
-        const dir = join(getVideosDir(), sessionId)
+        const dir = join(videosDir, sessionId)
         mkdirSync(dir, { recursive: true })
         return sessionId
     })
 
     ipcMain.handle('save-recording', (_event, sessionId: string, type: string, buffer: ArrayBuffer) => {
-        const dir = join(getVideosDir(), sessionId)
+        const dir = join(videosDir, sessionId)
         if (!existsSync(dir)) {
             mkdirSync(dir, { recursive: true })
         }
@@ -90,14 +86,13 @@ function setupIPC(): void {
     })
 
     ipcMain.handle('open-folder', async (_event, sessionId: string) => {
-        const dir = join(getVideosDir(), sessionId)
+        const dir = join(videosDir, sessionId)
         if (existsSync(dir)) {
             await shell.openPath(dir)
         }
     })
 
     ipcMain.handle('get-sessions', () => {
-        const videosDir = getVideosDir()
         if (!existsSync(videosDir)) return []
 
         return readdirSync(videosDir, { withFileTypes: true })
@@ -125,7 +120,7 @@ function setupIPC(): void {
     })
 
     ipcMain.handle('rename-session', (_event, sessionId: string, newName: string) => {
-        const dir = join(getVideosDir(), sessionId)
+        const dir = join(videosDir, sessionId)
         if (existsSync(dir)) {
             writeFileSync(join(dir, 'meta.json'), JSON.stringify({ name: newName }))
             return true
