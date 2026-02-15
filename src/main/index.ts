@@ -4,10 +4,7 @@ import { mkdirSync, writeFileSync, readdirSync, existsSync, readFileSync } from 
 import { v4 as uuidv4 } from 'uuid'
 
 let mainWindow: BrowserWindow | null = null
-
-
 const videosDir: string=join(process.cwd(), 'videos')
-
 
 function createWindow(): void {
     mainWindow = new BrowserWindow({
