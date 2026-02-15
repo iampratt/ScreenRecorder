@@ -13,7 +13,6 @@ export class App {
     private elapsedSeconds = 0
     private previewStream: MediaStream | null = null
 
-    // DOM refs
     private el = {
         sourcesList: null as HTMLElement | null,
         sessionsList: null as HTMLElement | null,
@@ -69,8 +68,6 @@ export class App {
         this.el.openFolderBtn?.addEventListener('click', () => this.openFolder())
         this.el.newRecordingBtn?.addEventListener('click', () => this.newRecording())
     }
-
-    /* ── Sources ──────────────────────────────────────── */
 
     private async loadSources(): Promise<void> {
         try {
@@ -145,7 +142,6 @@ export class App {
         this.selectedSource = source
         this.renderSources()
 
-        // Stop existing preview
         this.stopPreview()
 
         try {
@@ -165,16 +161,13 @@ export class App {
             }
             this.el.idleState?.classList.add('hidden')
 
-            // Enable record button
             if (this.el.recordBtn) this.el.recordBtn.disabled = false
         } catch (err) {
             console.error('Failed to start preview:', err)
             this.showError('Failed to capture selected source')
 
-            // Ensure record button stays disabled on failure
             if (this.el.recordBtn) this.el.recordBtn.disabled = true
 
-            // Reset selected source on failure
             this.selectedSource = null
             this.renderSources()
         }
@@ -187,8 +180,6 @@ export class App {
             this.el.previewVideo.srcObject = null
         }
     }
-
-    /* ── Webcam ───────────────────────────────────────── */
 
     private async toggleWebcam(): Promise<void> {
         this.webcamEnabled = !this.webcamEnabled
@@ -224,8 +215,6 @@ export class App {
         }
     }
 
-    /* ── Recording ────────────────────────────────────── */
-
     private async toggleRecording(): Promise<void> {
         if (this.isRecording) {
             await this.stopRecording()
@@ -242,10 +231,8 @@ export class App {
             this.isRecording = true
             this.updateRecordingUI(true)
 
-            // Start screen recording using the existing preview stream
             await this.screenRecorder.startWithStream(this.previewStream)
 
-            // Start webcam recording if enabled
             if (this.webcamEnabled) {
                 try {
                     const webcamStream = await this.webcamRecorder.start()
@@ -274,7 +261,6 @@ export class App {
         this.updateRecordingUI(false)
 
         try {
-            // Stop screen recording and save
             const screenBlob = await this.screenRecorder.stop()
             this.screenRecorder.cleanup()
 
@@ -288,7 +274,6 @@ export class App {
                 }
             }
 
-            // Stop webcam recording and save
             if (this.webcamEnabled) {
                 const webcamBlob = await this.webcamRecorder.stop()
                 this.webcamRecorder.cleanup()
@@ -304,7 +289,6 @@ export class App {
                 }
             }
 
-            // Show complete screen
             this.showCompleteOverlay()
             await this.loadSessions()
         } catch (err) {
@@ -321,11 +305,8 @@ export class App {
         const label = this.el.recordBtn?.querySelector('.record-label')
         if (label) label.textContent = recording ? 'Stop Recording' : 'Start Recording'
 
-        // Disable source switching during recording
         this.renderSources()
     }
-
-    /* ── Timer ────────────────────────────────────────── */
 
     private startTimer(): void {
         this.elapsedSeconds = 0
@@ -353,8 +334,6 @@ export class App {
         }
     }
 
-    /* ── Complete Overlay ─────────────────────────────── */
-
     private showCompleteOverlay(): void {
         if (this.el.completeInfo) {
             this.el.completeInfo.textContent = `Session ${this.currentSessionId?.slice(0, 8)}...`
@@ -379,8 +358,6 @@ export class App {
         this.updateTimerDisplay()
         this.currentSessionId = null
     }
-
-    /* ── Sessions ─────────────────────────────────────── */
 
     private async loadSessions(): Promise<void> {
         try {
@@ -423,15 +400,11 @@ export class App {
         })
     }
 
-    /* ── Error Toast ──────────────────────────────────── */
-
     private showError(message: string): void {
         if (this.el.errorMessage) this.el.errorMessage.textContent = message
         this.el.errorToast?.classList.remove('hidden')
         setTimeout(() => this.el.errorToast?.classList.add('hidden'), 4000)
     }
-
-    /* ── Before Unload ────────────────────────────────── */
 
     private setupBeforeUnload(): void {
         window.addEventListener('beforeunload', async () => {
