@@ -12,13 +12,14 @@ function getVideosDir(): string {
     return join(process.cwd(), 'videos')
 }
 
+
 function createWindow(): void {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
         minWidth: 900,
         minHeight: 600,
-        backgroundColor: '#1c1917', // Match --bg-base from Liquid Glass theme
+        backgroundColor: '#1c1917',
         webPreferences: {
             preload: join(__dirname, '../preload/index.js'),
             contextIsolation: true,
@@ -44,7 +45,6 @@ function setupIPC(): void {
             })
             console.log(`[get-sources] Found ${sources.length} sources`)
 
-            // On macOS, if sources is empty, it's almost always a permission issue
             if (process.platform === 'darwin' && sources.length === 0) {
                 console.warn('[get-sources] No sources found on macOS. Likely permission issue.')
             }
@@ -61,8 +61,6 @@ function setupIPC(): void {
             console.error('[get-sources] Error name:', error instanceof Error ? error.name : 'unknown')
             console.error('[get-sources] Error message:', error instanceof Error ? error.message : String(error))
             console.error('[get-sources] Error stack:', error instanceof Error ? error.stack : 'no stack')
-
-            // Return empty array instead of throwing - let the UI handle it
             return []
         }
     })
@@ -80,7 +78,7 @@ function setupIPC(): void {
         return sessionId
     })
 
-    ipcMain.handle('save-recording', async (_event, sessionId: string, type: string, buffer: ArrayBuffer) => {
+    ipcMain.handle('save-recording', (_event, sessionId: string, type: string, buffer: ArrayBuffer) => {
         const dir = join(getVideosDir(), sessionId)
         if (!existsSync(dir)) {
             mkdirSync(dir, { recursive: true })
@@ -113,7 +111,7 @@ function setupIPC(): void {
                     try {
                         const meta = JSON.parse(readFileSync(metaPath, 'utf-8'))
                         if (meta.name) name = meta.name
-                    } catch { /* ignore */ }
+                    } catch {}
                 }
                 return {
                     id: d.name,
