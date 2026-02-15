@@ -1,5 +1,6 @@
 import './styles.css'
-import { App } from './app'
+import { initApp } from './app'
 
-const app = new App()
-app.init()
+initApp()
+
+

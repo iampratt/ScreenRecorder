@@ -11,120 +11,73 @@ function getSupportedMimeType(): string {
     return 'video/webm'
 }
 
-export class ScreenRecorder {
-    private mediaRecorder: MediaRecorder | null = null
-    private chunks: Blob[] = []
-    private stream: MediaStream | null = null
+export interface RecorderState {
+    mediaRecorder: MediaRecorder | null
+    chunks: Blob[]
+    stream: MediaStream | null
+}
 
-    async start(sourceId: string): Promise<MediaStream> {
-        this.chunks = []
-        this.stream = await navigator.mediaDevices.getUserMedia({
-            audio: false,
-            video: {
-                mandatory: {
-                    chromeMediaSource: 'desktop',
-                    chromeMediaSourceId: sourceId
-                }
-            } as any
-        })
-
-        this.mediaRecorder = new MediaRecorder(this.stream, {
-            mimeType: getSupportedMimeType()
-        })
-
-        this.mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) this.chunks.push(e.data)
-        }
-
-        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
-        return this.stream
-    }
-
-    async startWithStream(stream: MediaStream): Promise<void> {
-        this.chunks = []
-        this.stream = stream
-
-        this.mediaRecorder = new MediaRecorder(this.stream, {
-            mimeType: getSupportedMimeType()
-        })
-
-        this.mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) this.chunks.push(e.data)
-        }
-
-        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
-    }
-
-    stop(): Promise<Blob> {
-        return new Promise((resolve) => {
-            if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
-                resolve(new Blob(this.chunks, { type: 'video/webm' }))
-                return
-            }
-            this.mediaRecorder.onstop = () => {
-                resolve(new Blob(this.chunks, { type: 'video/webm' }))
-            }
-            this.mediaRecorder.stop()
-        })
-    }
-
-    cleanup(): void {
-        this.stream?.getTracks().forEach(t => t.stop())
-        this.stream = null
-        this.mediaRecorder = null
-        this.chunks = []
-    }
-
-    getStream(): MediaStream | null {
-        return this.stream
+export function createRecorderState(): RecorderState {
+    return {
+        mediaRecorder: null,
+        chunks: [],
+        stream: null
     }
 }
 
-export class WebcamRecorder {
-    private mediaRecorder: MediaRecorder | null = null
-    private chunks: Blob[] = []
-    private stream: MediaStream | null = null
+export async function startScreenRecording(
+    state: RecorderState,
+    stream: MediaStream
+): Promise<void> {
+    state.chunks = []
+    state.stream = stream
 
-    async start(): Promise<MediaStream> {
-        this.chunks = []
-        this.stream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
-            audio: false
-        })
+    state.mediaRecorder = new MediaRecorder(state.stream, {
+        mimeType: getSupportedMimeType()
+    })
 
-        this.mediaRecorder = new MediaRecorder(this.stream, {
-            mimeType: getSupportedMimeType()
-        })
+    state.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) state.chunks.push(e.data)
+    }
 
-        this.mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) this.chunks.push(e.data)
+    state.mediaRecorder.start(10000)
+}
+
+export async function startWebcamRecording(state: RecorderState): Promise<MediaStream> {
+    state.chunks = []
+    state.stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        audio: false
+    })
+
+    state.mediaRecorder = new MediaRecorder(state.stream, {
+        mimeType: getSupportedMimeType()
+    })
+
+    state.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) state.chunks.push(e.data)
+    }
+
+    state.mediaRecorder.start(10000)
+    return state.stream
+}
+
+export function stopRecording(state: RecorderState): Promise<Blob> {
+    return new Promise((resolve) => {
+        if (!state.mediaRecorder || state.mediaRecorder.state === 'inactive') {
+            resolve(new Blob(state.chunks, { type: 'video/webm' }))
+            return
         }
+        state.mediaRecorder.onstop = () => {
+            resolve(new Blob(state.chunks, { type: 'video/webm' }))
+        }
+        state.mediaRecorder.stop()
+    })
+}
 
-        this.mediaRecorder.start(10000) // 10s chunks to reduce memory usage
-        return this.stream
-    }
-
-    stop(): Promise<Blob> {
-        return new Promise((resolve) => {
-            if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
-                resolve(new Blob(this.chunks, { type: 'video/webm' }))
-                return
-            }
-            this.mediaRecorder.onstop = () => {
-                resolve(new Blob(this.chunks, { type: 'video/webm' }))
-            }
-            this.mediaRecorder.stop()
-        })
-    }
-
-    cleanup(): void {
-        this.stream?.getTracks().forEach(t => t.stop())
-        this.stream = null
-        this.mediaRecorder = null
-        this.chunks = []
-    }
-
-    getStream(): MediaStream | null {
-        return this.stream
-    }
+export function cleanupRecorder(state: RecorderState): void {
+    state.stream?.getTracks().forEach(t => t.stop())
+    state.stream = null
+    state.mediaRecorder = null
+    state.chunks = []
 }
